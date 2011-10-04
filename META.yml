@@ -1,0 +1,28 @@
+---
+abstract: 'The great new DBIx::Class::Indexer::WebService::Dezi!'
+author:
+  - 'Logan Bell, C<< <loganbell at gmail.com> >>'
+  - 'Logan Bell <loganbell@gmail.com>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 1.01'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: DBIx-Class-Indexer-WebService-Dezi
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  DBIx::Class::Indexed: 0
+  Dezi::Client: 0
+  perl: 5.6.0
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01
