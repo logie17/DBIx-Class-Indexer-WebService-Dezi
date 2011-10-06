@@ -1,7 +1,9 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
-use Moose;
-use base qw( DBIx::Class::Indexer DBIx::Class );
+use Moo;
+
+qw( DBIx::Class::Indexer DBIx::Class );
+
 use Dezi::Client;
 use XML::Simple;
 use Scalar::Util ();
@@ -21,10 +23,20 @@ Version 0.01
 
 our $VERSION = '0.01';
 
+=head2 connect_info
+
+Connect info parameters.
+
+=cut
 has connect_info => (
     is => 'rw'
 );
 
+=head2 source
+
+Source object
+
+=cut
 has source => (
     is => 'rw'
 );
