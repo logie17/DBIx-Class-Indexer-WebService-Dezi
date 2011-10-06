@@ -1,8 +1,8 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
 use Moo;
-
-qw( DBIx::Class::Indexer DBIx::Class );
+# This only works for some reason?
+use base qw( DBIx::Class::Indexer DBIx::Class );
 
 use Dezi::Client;
 use XML::Simple;
