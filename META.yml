@@ -22,7 +22,6 @@ no_index:
 requires:
   DBIx::Class::Indexed: 0
   Dezi::Client: 0
-  perl: 5.6.0
 resources:
   license: http://dev.perl.org/licenses/
 version: 0.01

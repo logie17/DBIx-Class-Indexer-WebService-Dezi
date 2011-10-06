@@ -1,9 +1,6 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
-use 5.006;
-use strict;
-use warnings;
-
+use Moose;
 use base qw( DBIx::Class::Indexer DBIx::Class );
 use Dezi::Client;
 use XML::Simple;
@@ -24,13 +21,26 @@ Version 0.01
 
 our $VERSION = '0.01';
 
+has connect_info => (
+    is => 'rw'
+);
+
+has source => (
+    is => 'rw'
+);
+
+around BUILDARGS => sub {
+    my ( $orig, $class, $connect_info, $source ) = @_;
+
+    return $class->$orig(connect_info => $connect_info, source => $source );
+    
+};
 
 =head1 SYNOPSIS
 
-This module was inspired by DBIx::Class::Indexer::WebService::Solr and borrows
-a lot from that. In fact it uses DBIx::Class::Indexer as its abstract class.
-This indexer allows one to use a Dezi::Client to update the index on "insert",
-"update", or "delete".
+This module was inspired (and borrowed some) by DBIx::Class::Indexer::WebService::Solr.
+In fact it uses DBIx::Class::Indexer as its abstract class.  This indexer allows one to 
+use a Dezi::Client to update the index on "insert", "update", or "delete".
 
     use DBIx::Class::Indexer::WebService::Dezi;
 
@@ -39,28 +49,56 @@ This indexer allows one to use a Dezi::Client to update the index on "insert",
 
 =head1 METHODS
 
-=head2 new( \%connect_info, $source_class )
+=head2 as_document( $self, $object )
+
+Handles the insert operation. Generates a XML document that will be
+indexed by the dezi service.
+
+=cut
+
+sub as_document {
+    my ($self, $object) = @_;
+
+    my $fields = $object->index_fields;
+
+    my %output;
+
+    my $xs = XML::Simple->new;
+
+    # for each field...
+    for my $name ( keys %$fields ) {
+        my $opts    = $fields->{$name};
+        my @values  = $self->value_for_field( $object, $name );
+    
+        for( @values ) {
+            $output{$name} = [ @values ]
+        }
+    }
+
+    my $xml = $xs->XMLout(\%output, NoAttr => 1, RootName=>'doc',);
+
+    return \$xml;
+}
+
+=head2 BUILD( $self )
 
 Creates a new Dezi::Client object and normalizes the fields to be
 indexed.
 
 =cut
+sub BUILD {
+    my ( $self ) = @_;
 
-sub new {
-    my $class        = shift;
-    my $connect_info = shift;
-    my $source       = shift;
-    
-    my $self = bless { }, $class;
-    $self->setup_fields( $source );
+    $self->setup_fields( $self->source );
 
-    my $server = $connect_info->{ server };
+    my $server = $self->connect_info->{ server };
 
     my $dezi   = Dezi::Client->new( server => $server ); 
 
     $self->_obj( $dezi );
 
     return $self;
+
 }
 
 
@@ -80,40 +118,13 @@ sub update_or_create_document {
     $dezi->index( $self->as_document( $object ), $object->id . '.xml' );
 }
 
-=head2 as_document( $object )
-
-Handles the insert operation. Generates a XML document that will be
-indexed by the dezi service.
-
-=cut
-sub as_document {
-    my ($self, $object) = @_;
-
-    my $fields = $object->index_fields;
-
-    my %output;
-
-    my $xs = new XML::Simple;
-
-    # for each field...
-    for my $name ( keys %$fields ) {
-        my $opts    = $fields->{$name};
-        my @values  = $self->value_for_field( $object, $name );
-    
-        for( @values ) {
-            $output{$name} = [ @values ]
-        }
-    }
-
-    my $xml = $xs->XMLout(\%output, NoAttr => 1, RootName=>'doc',);
-
-    return \$xml;
-}
 
 =head2 value_for_field( $object, $key )
 
 Uses the indexed fields information to determine how to get
 the values for C<$key> out of C<$object>. 
+
+The logic here was borrowed from DBIx::Class::Indexer::WebService::Solr
 
 =cut
 
