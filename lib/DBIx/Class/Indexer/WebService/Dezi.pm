@@ -1,15 +1,10 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
-use Moo;
-# This only works for some reason?
-use base qw( DBIx::Class::Indexer DBIx::Class );
+use Moose;
 
 use Dezi::Client;
 use XML::Simple;
 use Scalar::Util ();
-
-__PACKAGE__->mk_classdata( _obj        => undef );
-__PACKAGE__->mk_classdata( _field_prep => {} );
 
 =head1 NAME
 
@@ -39,6 +34,31 @@ Source object
 =cut
 has source => (
     is => 'rw'
+);
+
+=head2 _obj
+
+Internal dezi object.
+
+=cut
+has _obj => (
+    is => 'rw'
+);
+
+=head2 _field_prep
+
+Used for noramalization of fields.
+
+=cut
+has _field_prep => (
+    traits  => ['Hash'],
+    is      => 'rw',
+    isa     => 'HashRef[Str]',
+    default   => sub { {} },
+    handles   => {
+          set_field_prep => 'set',
+          get_field_prep => 'get',
+    }
 );
 
 around BUILDARGS => sub {
@@ -177,7 +197,7 @@ boost key.
 sub setup_fields {
     my( $self, $source ) = @_;
 
-    return if $self->_field_prep->{ $source };
+    return if $self->get_field_prep( $source );
 
     my $fields = $source->index_fields;
   
@@ -186,7 +206,7 @@ sub setup_fields {
         $fields->{ $key } = { } if !ref $fields->{ $key };
     }
 
-    $self->_field_prep->{ $source } = 1;
+    $self->set_field_prep( $source => 1 );
 }
 
 =head2 delete( $object )
