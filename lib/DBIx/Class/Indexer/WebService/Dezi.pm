@@ -1,9 +1,8 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
-use Moose;
+use Moo;
 
 use Dezi::Client;
-use XML::Simple;
 use Scalar::Util ();
 
 =head1 NAME
@@ -16,7 +15,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.0001';
 
 =head2 connect_info
 
@@ -25,6 +24,16 @@ Connect info parameters.
 =cut
 has connect_info => (
     is => 'rw'
+);
+
+=head2 content_type
+
+Connect info parameters.
+
+=cut
+has content_type => (
+    is      => 'rw',
+    default => sub { 'application/xml' }
 );
 
 =head2 source
@@ -63,9 +72,7 @@ has _field_prep => (
 
 around BUILDARGS => sub {
     my ( $orig, $class, $connect_info, $source ) = @_;
-
-    return $class->$orig(connect_info => $connect_info, source => $source );
-    
+    return $class->$orig( connect_info => $connect_info, source => $source );
 };
 
 =head1 SYNOPSIS
@@ -89,13 +96,12 @@ indexed by the dezi service.
 =cut
 
 sub as_document {
-    my ($self, $object) = @_;
+    my ( $self, $object ) = @_;
 
     my $fields = $object->index_fields;
 
     my %output;
 
-    my $xs = XML::Simple->new;
 
     # for each field...
     for my $name ( keys %$fields ) {
@@ -107,10 +113,11 @@ sub as_document {
         }
     }
 
-    my $xml = $xs->XMLout(\%output, NoAttr => 1, RootName=>'doc',);
+    my $output_str = $self->_generate_document(\%output);
 
-    return \$xml;
+    return \$output_str;
 }
+
 
 =head2 BUILD( $self )
 
@@ -123,7 +130,9 @@ sub BUILD {
 
     $self->setup_fields( $self->source );
 
-    my $server = $self->connect_info->{ server };
+    my $server       = $self->connect_info->{ server };
+
+    $self->content_type( $self->connect_info->{ format } );
 
     my $dezi   = Dezi::Client->new( server => $server ); 
 
@@ -147,7 +156,7 @@ sub update_or_create_document {
 
     $self->setup_fields( ref $object );
 
-    $dezi->index( $self->as_document( $object ), $object->id . '.xml' );
+    $dezi->index( $self->as_document( $object ), $object->id, $self->content_type );
 }
 
 
@@ -224,7 +233,7 @@ sub delete {
 
     my $id = $self->value_for_field( $object, 'id' );
 
-    $dezi->delete( $id . '.xml' );  
+    $dezi->delete( $id );  
 }
 
 =head2 insert( $object )
@@ -250,6 +259,23 @@ sub update {
     my $object = shift;
     
     $self->update_or_create_document( $object );
+}
+
+sub _generate_document {
+    my ( $self, $fields ) = @_;
+
+    my $output_str;
+    if ( $self->content_type eq 'application/xml' ) {
+        require XML::Simple;
+        my $xs = XML::Simple->new;
+        $output_str = $xs->XMLout($fields, NoAttr => 1, RootName=>'doc',);
+    } elsif ( $self->content_type eq 'application/json' ) {
+        require JSON;
+        $output_str = JSON::encode_json({ doc => $fields });
+        use Data::Dumper;
+    }
+
+    return $output_str;
 }
 
 =head1 AUTHOR
