@@ -8,6 +8,8 @@ license  'perl';
 build_requires 'Test::More';
 requires 'DBIx::Class::Indexed';
 requires 'Dezi::Client';
+requires 'JSON';
+requires 'XML::Simple';
 
 test_requires 'Test::More';
 
