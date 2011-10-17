@@ -131,10 +131,7 @@ sub BUILD {
     $self->setup_fields( $self->source );
 
     my $server       = $self->connect_info->{ server };
-
-    $self->content_type( $self->connect_info->{ format } );
-
-    my $dezi   = Dezi::Client->new( server => $server ); 
+    my $dezi         = Dezi::Client->new( server => $server ); 
 
     $self->_obj( $dezi );
 
