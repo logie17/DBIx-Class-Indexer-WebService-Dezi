@@ -269,7 +269,6 @@ sub _generate_document {
     } elsif ( $self->content_type eq 'application/json' ) {
         require JSON;
         $output_str = JSON::encode_json({ doc => $fields });
-        use Data::Dumper;
     }
 
     return $output_str;
