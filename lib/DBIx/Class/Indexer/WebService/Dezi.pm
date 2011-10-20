@@ -1,6 +1,6 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
-use Moo;
+use Moose;
 
 use Dezi::Client;
 use Scalar::Util ();
@@ -15,7 +15,60 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.0001';
+our $VERSION = '0.01';
+
+around BUILDARGS => sub {
+    my ( $orig, $class, $connect_info, $source ) = @_;
+    return $class->$orig( connect_info => $connect_info, source => $source );
+};
+
+=head1 SYNOPSIS
+
+This module was inspired (and borrowed some) by DBIx::Class::Indexer::WebService::Solr.
+In fact it uses DBIx::Class::Indexer as its abstract class.  This indexer allows one to 
+use a Dezi::Client to update the index on "insert", "update", or "delete".
+
+    package MyApp::Schema::Foo; 
+    use base 'DBIx::Class';
+
+    __PACKAGE__->load_components(qw[ Indexed ] );
+    __PACKAGE__->set_indexer('WebService::Dezi', { server => 'http://localhost:5000', content_type => 'application/json' });
+    
+    __PACKAGE__->table('person');
+    
+    __PACKAGE__->add_columns(
+        person_id => {
+            data_type       => 'varchar',
+            size            => '36',
+            is_nullable     => 0,
+        },
+        name => {
+            data_type => 'varchar',
+            is_nullable => 0,
+            indexed => 1 
+        },
+        age => {
+            data_type => 'integer',
+            is_nullable => 0,
+        },
+        image_path => {
+            data_type       => 'varchar',
+            size            => '128',
+            indexed         => 1,
+        },
+        email => {
+            data_type => 'varchar',
+            size=>'128',
+        },
+        created => {
+            data_type => 'timestamp',
+            set_on_create => 1,
+            is_nullable => 0,
+        },
+    );
+
+
+=head1 ATTRIBUTES
 
 =head2 connect_info
 
@@ -70,23 +123,7 @@ has _field_prep => (
     }
 );
 
-around BUILDARGS => sub {
-    my ( $orig, $class, $connect_info, $source ) = @_;
-    return $class->$orig( connect_info => $connect_info, source => $source );
-};
-
-=head1 SYNOPSIS
-
-This module was inspired (and borrowed some) by DBIx::Class::Indexer::WebService::Solr.
-In fact it uses DBIx::Class::Indexer as its abstract class.  This indexer allows one to 
-use a Dezi::Client to update the index on "insert", "update", or "delete".
-
-    use DBIx::Class::Indexer::WebService::Dezi;
-
-    my $foo = DBIx::Class::Indexer::WebService::Dezi->new();
-    ...
-
-=head1 METHODS
+=head1 ATTRIBUTES
 
 =head2 as_document( $self, $object )
 
@@ -131,9 +168,12 @@ sub BUILD {
     $self->setup_fields( $self->source );
 
     my $server       = $self->connect_info->{ server };
+    my $content_type = $self->connect_info->{content_type} || $self->content_type;;
+
     my $dezi         = Dezi::Client->new( server => $server ); 
 
     $self->_obj( $dezi );
+    $self->content_type($content_type);
 
     return $self;
 
@@ -154,6 +194,7 @@ sub update_or_create_document {
     $self->setup_fields( ref $object );
 
     $dezi->index( $self->as_document( $object ), $object->id, $self->content_type );
+
 }
 
 
@@ -170,7 +211,7 @@ sub value_for_field {
     my( $self, $object, $key ) = @_;
     my $info   = $object->index_fields->{ $key };
     my $source = $info->{ source } || $key;
-     
+
     if( ref $source eq 'CODE' ) {
         return $source->( $object );
     }
