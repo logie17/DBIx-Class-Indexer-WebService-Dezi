@@ -12,6 +12,7 @@ requires 'JSON';
 requires 'XML::Simple';
 
 test_requires 'Test::More';
+test_requires 'Test::MockModule';
 
 auto_install;
 
