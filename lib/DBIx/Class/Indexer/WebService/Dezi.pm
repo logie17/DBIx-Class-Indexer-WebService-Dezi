@@ -2,7 +2,10 @@ package DBIx::Class::Indexer::WebService::Dezi;
 
 use Moose;
 
+use Carp;
 use Dezi::Client;
+use MIME::Base64 qw(encode_base64);
+use Media::Type::Simple;
 use Scalar::Util ();
 
 =head1 NAME
@@ -11,7 +14,7 @@ DBIx::Class::Indexer::WebService::Dezi - The great new DBIx::Class::Indexer::Web
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
@@ -31,8 +34,8 @@ use a Dezi::Client to update the index on "insert", "update", or "delete".
     package MyApp::Schema::Foo; 
     use base 'DBIx::Class';
 
-    __PACKAGE__->load_components(qw[ Indexed ] );
-    __PACKAGE__->set_indexer('WebService::Dezi', { server => 'http://localhost:5000', content_type => 'application/json' });
+    __PACKAGE__->load_components( qw[ Indexed ] );
+    __PACKAGE__->set_indexer( 'WebService::Dezi', { server => 'http://localhost:5000', content_type => 'application/json' } );
     
     __PACKAGE__->table('person');
     
@@ -43,13 +46,13 @@ use a Dezi::Client to update the index on "insert", "update", or "delete".
             is_nullable     => 0,
         },
         name => {
-            data_type => 'varchar',
-            is_nullable => 0,
-            indexed => 1 
+            data_type       => 'varchar',
+            is_nullable     => 0,
+            indexed         => 1 
         },
         age => {
-            data_type => 'integer',
-            is_nullable => 0,
+            data_type       => 'integer',
+            is_nullable     => 0,
         },
         image_path => {
             data_type       => 'varchar',
@@ -57,13 +60,13 @@ use a Dezi::Client to update the index on "insert", "update", or "delete".
             indexed         => 1,
         },
         email => {
-            data_type => 'varchar',
-            size=>'128',
+            data_type       => 'varchar',
+            size            => '128',
         },
         created => {
-            data_type => 'timestamp',
-            set_on_create => 1,
-            is_nullable => 0,
+            data_type       => 'timestamp',
+            set_on_create   => 1,
+            is_nullable     => 0,
         },
     );
 
@@ -127,8 +130,8 @@ has _field_prep => (
 
 =head2 as_document( $self, $object )
 
-Handles the insert operation. Generates a XML document that will be
-indexed by the dezi service.
+Handles the insert operation. Generates a XML or JSON document 
+that will be indexed by the dezi service.
 
 =cut
 
@@ -138,12 +141,14 @@ sub as_document {
     my $fields = $object->index_fields;
 
     my %output;
-
-
     # for each field...
     for my $name ( keys %$fields ) {
         my $opts    = $fields->{$name};
         my @values  = $self->value_for_field( $object, $name );
+
+        if ( defined $opts->{is_binary} ) {
+            @values = $self->_encode_to_base64($values[0]);
+        }
     
         for( @values ) {
             $output{$name} = [ @values ]
@@ -154,7 +159,6 @@ sub as_document {
 
     return \$output_str;
 }
-
 
 =head2 BUILD( $self )
 
@@ -297,6 +301,25 @@ sub update {
     my $object = shift;
     
     $self->update_or_create_document( $object );
+}
+
+sub _encode_to_base64 {
+    my ( $self, $file ) = @_;
+
+    my $return_content;
+
+    my $ext     = $file =~ s/.*\.([^\.])/$1/r;
+    my $type    = type_from_ext($ext);
+
+    if (-e  $file ) {
+        open( my $fh, "<", $file) || croak "Unable to open file: $file";
+        my $buf;
+        while ( read($fh, $buf, 60*57) ) {
+            $return_content .= encode_base64($buf);
+        }
+        return ($type,$return_content);
+    }
+
 }
 
 sub _generate_document {
