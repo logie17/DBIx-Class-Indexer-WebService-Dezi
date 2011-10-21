@@ -19,27 +19,27 @@ __PACKAGE__->add_columns(
         is_nullable     => 0,
     },
     name => {
-        data_type => 'varchar',
-        is_nullable => 0,
-        indexed => 1 
+        data_type       => 'varchar',
+        is_nullable     => 0,
+        indexed         => 1 
     },
     age => {
-        data_type => 'integer',
-        is_nullable => 0,
+        data_type       => 'integer',
+        is_nullable     => 0,
     },
     image_path => {
         data_type       => 'varchar',
         size            => '128',
-        indexed         => 1,
+        indexed         => { is_binary => 1 }
     },
     email => {
-        data_type => 'varchar',
-        size=>'128',
+        data_type       => 'varchar',
+        size            => '128',
     },
     created => {
-        data_type => 'timestamp',
-        set_on_create => 1,
-        is_nullable => 0,
+        data_type       => 'timestamp',
+        set_on_create   => 1,
+        is_nullable     => 0,
     },
 );
 __PACKAGE__->set_primary_key('person_id');
