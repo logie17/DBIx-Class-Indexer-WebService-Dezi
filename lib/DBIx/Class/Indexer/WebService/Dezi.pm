@@ -7,6 +7,7 @@ use Dezi::Client;
 use MIME::Base64 qw(encode_base64);
 use Media::Type::Simple;
 use Scalar::Util ();
+use File::Slurp;
 
 =head1 NAME
 
@@ -141,13 +142,25 @@ sub as_document {
     my $fields = $object->index_fields;
 
     my %output;
-    # for each field...
+    # for each field in schema...
     for my $name ( keys %$fields ) {
         my $opts    = $fields->{$name};
         my @values  = $self->value_for_field( $object, $name );
 
         if ( defined $opts->{is_binary} ) {
-            @values = $self->_encode_to_base64($values[0]);
+            my $file_path    = $values[0];
+
+            my $content_type = $self->_determine_content_type($file_path);
+            my $binary_data  = $self->_read_binary($file_path);
+
+            @values = ($content_type, $binary_data);
+
+            if ( defined $opts->{base64_encode} ) {
+                @values = ($content_type, encode_base64($binary_data));
+            } else {
+                @values = ($content_type, $binary_data);
+            }
+
         }
     
         for( @values ) {
@@ -303,23 +316,17 @@ sub update {
     $self->update_or_create_document( $object );
 }
 
-sub _encode_to_base64 {
-    my ( $self, $file ) = @_;
-
-    my $return_content;
-
-    my $ext     = $file =~ s/.*\.([^\.])/$1/r;
+sub _determine_content_type {
+    my ( $self, $file_path ) = @_;
+    my $ext     = $file_path =~ s/.*\.([^\.])/$1/r;
     my $type    = type_from_ext($ext);
+    return $type;
+}
 
-    if (-e  $file ) {
-        open( my $fh, "<", $file) || croak "Unable to open file: $file";
-        my $buf;
-        while ( read($fh, $buf, 60*57) ) {
-            $return_content .= encode_base64($buf);
-        }
-        return ($type,$return_content);
-    }
-
+sub _read_binary {
+    my ( $self, $file_path ) = @_;
+    my $bin_data = read_file( $file_path, binmode => ':raw' ) ;
+    return $bin_data;
 }
 
 sub _generate_document {

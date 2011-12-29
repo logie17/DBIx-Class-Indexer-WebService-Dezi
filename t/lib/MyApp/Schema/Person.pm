@@ -30,7 +30,7 @@ __PACKAGE__->add_columns(
     image_path => {
         data_type       => 'varchar',
         size            => '128',
-        indexed         => { is_binary => 1 }
+        indexed         => { is_binary => 1, base64_encode => 1 }
     },
     email => {
         data_type       => 'varchar',
