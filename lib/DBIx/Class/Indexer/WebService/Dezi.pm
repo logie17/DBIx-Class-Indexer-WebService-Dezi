@@ -11,15 +11,15 @@ use File::Slurp;
 
 =head1 NAME
 
-DBIx::Class::Indexer::WebService::Dezi - The great new DBIx::Class::Indexer::WebService::Dezi!
+DBIx::Class::Indexer::WebService::Dezi - An indexer for Dezi/Lucy.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 around BUILDARGS => sub {
     my ( $orig, $class, $connect_info, $source ) = @_;
@@ -58,7 +58,7 @@ use a Dezi::Client to update the index on "insert", "update", or "delete".
         image_path => {
             data_type       => 'varchar',
             size            => '128',
-            indexed         => 1,
+            indexed         => { is_binary => 1, base64_encode => 1 },
         },
         email => {
             data_type       => 'varchar',
@@ -71,6 +71,22 @@ use a Dezi::Client to update the index on "insert", "update", or "delete".
         },
     );
 
+=head2 CONFIG 
+
+=item indexed
+
+Can be set to 1 or contain a hashref.
+
+=item is_binary
+
+Flags an indexied field as a binary pointer. Will attempt
+to slurp the contents for indexing.
+
+=item base64_encode
+
+A flag that will make a is_binary indexed field converted 
+to base64. It is worth noting that highlighting needs to be
+turned off in the dezi config for this to properly index.
 
 =head1 ATTRIBUTES
 
@@ -384,9 +400,7 @@ L<http://search.cpan.org/dist/DBIx-Class-Indexer-WebService-Dezi/>
 
 =back
 
-
 =head1 ACKNOWLEDGEMENTS
-
 
 =head1 LICENSE AND COPYRIGHT
 
