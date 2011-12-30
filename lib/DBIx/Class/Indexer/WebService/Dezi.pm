@@ -71,18 +71,18 @@ use a Dezi::Client to update the index on "insert", "update", or "delete".
         },
     );
 
-=head2 CONFIG 
+=head1 CONFIG 
 
-=item indexed
+=head2 indexed
 
 Can be set to 1 or contain a hashref.
 
-=item is_binary
+=head2 is_binary
 
 Flags an indexied field as a binary pointer. Will attempt
 to slurp the contents for indexing.
 
-=item base64_encode
+=head2 base64_encode
 
 A flag that will make a is_binary indexed field converted 
 to base64. It is worth noting that highlighting needs to be
