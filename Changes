@@ -6,7 +6,11 @@ Revision history for DBIx-Class-Indexer-WebService-Dezi
 0.02    10/19/2011
         Added skipping unnecessary repo files.
 
-0.03    12/29/2011
+0.03    12/28/2011
         Added is_binary and base64 encoding upon indexing.
         Various other documentation updates.
+
+0.04    12/29/2011
+        Fixed broken unit tests by adding Moose as a dependency
+        in Makefile.PL
 

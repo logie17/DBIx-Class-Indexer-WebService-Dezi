@@ -6,13 +6,14 @@ author   q{Logan Bell <loganbell@gmail.com>};
 license  'perl';
 
 build_requires 'Test::More';
-requires 'DBIx::Class::Indexed';
-requires 'Dezi::Client';
-requires 'JSON';
-requires 'XML::Simple';
-requires 'File::Slurp';
-requires 'MIME::Base64';
-requires 'Media::Type::Simple';
+requires 'Moose'                    => 0;
+requires 'DBIx::Class::Indexed'     => 0;
+requires 'Dezi::Client'             => 0;
+requires 'JSON'                     => 0;
+requires 'XML::Simple'              => 0;
+requires 'File::Slurp'              => 0;
+requires 'MIME::Base64'             => 0;
+requires 'Media::Type::Simple'      => 0;
 
 test_requires 'Test::More';
 test_requires 'Test::MockModule';

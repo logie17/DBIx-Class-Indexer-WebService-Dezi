@@ -15,11 +15,11 @@ DBIx::Class::Indexer::WebService::Dezi - An indexer for Dezi/Lucy.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 around BUILDARGS => sub {
     my ( $orig, $class, $connect_info, $source ) = @_;
