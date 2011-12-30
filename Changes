@@ -14,3 +14,6 @@ Revision history for DBIx-Class-Indexer-WebService-Dezi
         Fixed broken unit tests by adding Moose as a dependency
         in Makefile.PL
 
+0.05    12/29/2011
+        Removed references to Moo, now just using Moose.
+
