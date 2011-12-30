@@ -25,6 +25,10 @@ my $person0 = $resultset->new({
 });
 $person0->insert;
 
+my $results0 = $resultset->search( { name => 'FooBar' } );
+is $results0->count, 1;
+diag $results0->next->image_path;
+
 done_testing();
 
 sub get_dezi_mock {
