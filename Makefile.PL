@@ -10,6 +10,9 @@ requires 'DBIx::Class::Indexed';
 requires 'Dezi::Client';
 requires 'JSON';
 requires 'XML::Simple';
+requires 'File::Slurp'
+requires 'MIME::Base64'
+requires 'Media::Type::Simple';
 
 test_requires 'Test::More';
 test_requires 'Test::MockModule';
