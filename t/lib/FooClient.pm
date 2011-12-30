@@ -1,5 +1,5 @@
 package FooClient;
-use Moo;
+use Moose;
 
 has 'server' => (
     is  => 'rw'

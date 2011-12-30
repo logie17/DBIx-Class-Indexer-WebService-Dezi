@@ -1,6 +1,6 @@
 package Test;
 
-use Moo;
+use Moose;
 use MyApp::Schema;
 
 our $dsn    = "dbi:SQLite::memory:";
