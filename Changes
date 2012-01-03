@@ -17,3 +17,7 @@ Revision history for DBIx-Class-Indexer-WebService-Dezi
 0.05    12/29/2011
         Removed references to Moo, now just using Moose.
 
+0.06    01/03/2011
+        Adding fixes suggested by Andreas Koenig to satisfy cpantester
+        and hopefully fix remaining failures.
+
