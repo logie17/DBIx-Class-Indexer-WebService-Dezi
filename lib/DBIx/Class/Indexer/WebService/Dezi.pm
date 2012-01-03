@@ -1,5 +1,6 @@
 package DBIx::Class::Indexer::WebService::Dezi;
 
+use 5.014;
 use Moose;
 
 use Carp;
