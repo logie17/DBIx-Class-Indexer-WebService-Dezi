@@ -17,6 +17,7 @@ requires 'Media::Type::Simple'      => 0;
 
 test_requires 'Test::More';
 test_requires 'Test::MockModule';
+test_requires 'DBIx::Class::TimeStamp';
 
 auto_install;
 
