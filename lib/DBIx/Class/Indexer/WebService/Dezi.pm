@@ -97,7 +97,8 @@ Connect info parameters.
 
 =cut
 has connect_info => (
-    is => 'rw'
+    is => 'rw',
+    required => 1,
 );
 
 =head2 content_type
@@ -107,7 +108,8 @@ Connect info parameters.
 =cut
 has content_type => (
     is      => 'rw',
-    default => sub { 'application/xml' }
+    lazy    => 1,
+    default => sub { (shift)->connect_info->{content_type} || 'application/xml' }
 );
 
 =head2 source
@@ -119,13 +121,15 @@ has source => (
     is => 'rw'
 );
 
-=head2 _obj
+=head2 _dezi
 
 Internal dezi object.
 
 =cut
-has _obj => (
-    is => 'rw'
+has _dezi => (
+    is => 'rw',
+    lazy => 1,
+    default => sub { return Dezi::Client->new( server => (shift)->connect_info->{server} ) }
 );
 
 =head2 _field_prep
@@ -198,19 +202,8 @@ indexed.
 =cut
 sub BUILD {
     my ( $self ) = @_;
-
     $self->setup_fields( $self->source );
-
-    my $server       = $self->connect_info->{ server };
-    my $content_type = $self->connect_info->{content_type} || $self->content_type;;
-
-    my $dezi         = Dezi::Client->new( server => $server ); 
-
-    $self->_obj( $dezi );
-    $self->content_type($content_type);
-
     return $self;
-
 }
 
 
@@ -223,11 +216,9 @@ Handles the insert operation.
 sub update_or_create_document {
     my $self   = shift;
     my $object = shift;
-    my $dezi  = $self->_obj;
 
     $self->setup_fields( ref $object );
-
-    $dezi->index( $self->as_document( $object ), $object->id, $self->content_type );
+    $self->_dezi->index( $self->as_document( $object ), $object->id, $self->content_type );
 
 }
 
@@ -299,13 +290,11 @@ Handles the delete operation.
 sub delete {
     my $self   = shift;
     my $object = shift;
-    my $dezi  = $self->_obj;
 
     $self->setup_fields( ref $object );
 
     my $id = $self->value_for_field( $object, 'id' );
-
-    $dezi->delete( $id );  
+    $self->_dezi->delete( $id );  
 }
 
 =head2 insert( $object )
@@ -405,14 +394,13 @@ L<http://search.cpan.org/dist/DBIx-Class-Indexer-WebService-Dezi/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Logan Bell.
+Copyright 2012 Logan Bell.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
-
 
 =cut
 

@@ -11,9 +11,13 @@ BEGIN {
 my $dezi = get_dezi_mock();
 $dezi->mock( 'index', sub { 
     my $json = get_json();
-    is ${$_[1]}, $json;
-    is $_[2], 1;
-    is $_[3], 'application/json';
+    is ${$_[1]}, $json, "The first passed object is a json structure";
+    is $_[2], 1, "The second passed parameter is the db id";
+    is $_[3], 'application/json', "should be set to application/json";
+} );
+
+$dezi->mock( 'delete', sub { 
+    is ${$_[0]}, 1;
 } );
 
 my $schema = Test->initialize;
@@ -25,9 +29,25 @@ my $person0 = $resultset->new({
 });
 $person0->insert;
 
-my $results0 = $resultset->search( { name => 'FooBar' } );
-is $results0->count, 1;
-diag $results0->next->image_path;
+$resultset->find_or_create({
+    name        => 'FooBar',
+    age         => 18,
+    image_path  => './t/test_image.jpg'
+});
+
+$resultset->update({
+    name        => 'BazBar',
+    age         => 18,
+    image_path  => './t/test_image.jpg'
+});
+
+my $results0 = $resultset->search( { name => 'BazBar' } );
+is $results0->count, 1, "One record should be found";
+
+$results0->delete;
+
+my $results1 = $resultset->search( { name => 'BazBar' } );
+is $results1->count, 0, "Zero records should be found now";
 
 done_testing();
 
