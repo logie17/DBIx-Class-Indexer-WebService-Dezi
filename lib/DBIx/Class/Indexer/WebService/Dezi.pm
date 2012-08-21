@@ -324,7 +324,7 @@ sub update {
 
 sub _determine_content_type {
     my ( $self, $file_path ) = @_;
-    my $ext     = $file_path =~ s/.*\.([^\.])/$1/r;
+    my ($ext)   = $file_path =~ /\.([^\.]+)$/g;
     my $type    = type_from_ext($ext);
     return $type;
 }
