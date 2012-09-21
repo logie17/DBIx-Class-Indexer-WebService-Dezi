@@ -15,6 +15,7 @@ requires 'File::Slurp'              => 0;
 requires 'MIME::Base64'             => 0;
 requires 'Media::Type::Simple'      => 0;
 
+test_required 'Test::Exception';
 test_requires 'Test::More';
 test_requires 'Test::MockModule';
 test_requires 'DBIx::Class::TimeStamp';

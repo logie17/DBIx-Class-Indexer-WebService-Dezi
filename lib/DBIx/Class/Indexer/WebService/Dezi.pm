@@ -16,11 +16,11 @@ DBIx::Class::Indexer::WebService::Dezi - An indexer for Dezi/Lucy.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 around BUILDARGS => sub {
     my ( $orig, $class, $connect_info, $source ) = @_;
@@ -110,6 +110,19 @@ has content_type => (
     is      => 'rw',
     lazy    => 1,
     default => sub { (shift)->connect_info->{content_type} || 'application/xml' }
+);
+
+=head2 disabled
+
+Will disable any calls to Dezi::Client and indexing. This is useful in preventing
+exceptions if the Dezi server is temporarily down.
+
+=cut
+
+has disabled => (
+  is => 'rw',
+  lazy => 1,
+  default => sub { (shift)->connect_info->{disabled} || 0 }
 );
 
 =head2 source
@@ -306,6 +319,7 @@ Handles the insert operation.
 sub insert {
     my $self   = shift;
     my $object = shift;
+    return if $self->disabled;
     $self->update_or_create_document( $object );
 }
 
@@ -318,6 +332,7 @@ Handles the update operation.
 sub update {
     my $self   = shift;
     my $object = shift;
+    return if $self->disabled;
     
     $self->update_or_create_document( $object );
 }
@@ -350,6 +365,8 @@ sub _generate_document {
 
     return $output_str;
 }
+
+__PACKAGE__->meta->make_immutable;
 
 =head1 AUTHOR
 
