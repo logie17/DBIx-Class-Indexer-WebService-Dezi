@@ -16,13 +16,14 @@ my $resultset = $schema->resultset('Disabled');
 my $test = $resultset->new({
     name        => 'FooBar',
 });
-$test->insert;
 
-$resultset->find_or_create({
+lives_ok {$test->insert};
+
+lives_ok {$resultset->find_or_create({
     name        => 'FooBar',
-});
+}) };
 
-lives_ok { $resultset->search( { name => 'BazBar' } )->count, 1 };
+lives_ok { $resultset->search( { name => 'BazBar' } )->count };
 
 done_testing;
 
